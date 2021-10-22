@@ -51,10 +51,6 @@ clean_dotfile() {
 			echo 'alias feh="feh --no-fehbg"' >> "$HOME/tidytilde_commands"
 			;;
 
-		'.fltk')
-			echo '.fltk: No way to clean. Check https://www.fltk.org/str.php?L3370+P0+S0+C0+I0+E0+V%25+Qxdg'
-			;;
-
 		'.fonts')
 			echo '.fonts: clean process started. From now on, use $XDG_DATA_HOME/fonts to store fonts'
 			mv "$HOME/.fonts/*" "$XDG_DATA_HOME/fonts/"
@@ -66,14 +62,6 @@ clean_dotfile() {
 			mv "$HOME/.gitconfig" "$XDG_CONFIG_HOME/git/config"
 			;;
 
-		'.git-credentials')
-			echo '.git-credentials: No way to clean.'
-			;;
-			
-		'.gnome')
-			echo '.git-credentials: No way to clean. Check https://gitlab.freedesktop.org/xdg/xdg-utils/-/issues/81'
-			;;
-
 		'.gnupg')
 			#TODO
 			;;
@@ -83,11 +71,31 @@ clean_dotfile() {
 			echo 'export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc' >> "$HOME/tidytilde_commands"
 			mv "$HOME/.gtkrc-2.0" "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 			;;
-		'.icons')
-			echo '.icons: No way to clean.'
-			;;
 
 		'.irssi')
+			echo "irssi clean process started"
+			#TODO
+			;;
+
+		'.password-store')
+			echo '.password-store: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			echo 'export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass' >> "$HOME/tidytilde_commands"
+			mv "$HOME/.password-store" "$XDG_DATA_HOME/pass"
+			;;
+
+		'.rustup')
+			echo '.rustup: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			echo 'export RUSTUP_HOME="$XDG_DATA_HOME"/rustup' >> "$HOME/tidytilde_commands"
+			mv "$HOME/rustup" "$XDG_DATA_HOME/rustup"
+			;;
+
+		'.wine')
+			echo '.wine: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			mkdir -p "$XDG_DATA_HOME"/wineprefixes
+			echo 'export WINEPREFIX="$XDG_DATA_HOME"/wineprefixes/default' >> "$HOME/tidytilde_commands"
+			;;
+
+		'.')
 			echo "irssi clean process started"
 			#TODO
 			;;

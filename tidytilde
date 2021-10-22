@@ -1,0 +1,43 @@
+#!/bin/bash
+## Script to clean up your "$HOME"
+
+# XDG directories
+: ${XDG_CONFIG_HOME=$HOME/.config}
+: ${XDG_CACHE_HOME=$HOME/.cache}
+: ${XDG_DATA_HOME=$HOME/.local/share}
+
+# stop when something unexpected happends
+set -e
+set -o pipefail
+
+# Get a list of dotfiles in home directory
+shopt -s nullglob
+home_dotfiles=("$HOME"/.*)
+
+
+# Perform cleaning to dotfile
+clean_dotfile() {
+	local dotfile_path=$1
+	local dotfile_name=${dotfile_path##*/}
+
+	case $dotfile_name in
+		'.bashrc')
+			echo "bashrc clean process started"
+			# TODO
+			;;
+		'.irssi')
+			echo "irssi clean process started"
+			# TODO
+			;;
+		*)
+			echo "clean up process for $dotfile_name isn't added yet"
+			;;
+	esac
+}
+
+
+
+
+for file_path in ${home_dotfiles[@]}; do
+	clean_dotfile "$file_path"
+done

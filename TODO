@@ -35,7 +35,6 @@
 .viminfo
 .vnc
 .vscode-oss
-.wget-hsts
 .wine
 .WineApps
 .Xauthority

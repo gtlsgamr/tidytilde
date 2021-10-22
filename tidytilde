@@ -76,6 +76,12 @@ clean_dotfile() {
 			echo "irssi clean process started"
 			#TODO
 			;;
+		'.newsboat')
+			echo '.newsboat: clean process started.'
+			mkdir -p "$XDG_CONFIG_HOME/newsboat"
+			mv "$HOME/.newsboat/config" "$HOME/.newsboat/urls" "$XDG_CONFIG_HOME/newsboat"
+			mv "$HOME/.newsboat" "$XDG_DATA_HOME/newsboat"
+			;;
 
 		'.password-store')
 			echo '.password-store: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
@@ -89,10 +95,38 @@ clean_dotfile() {
 			mv "$HOME/rustup" "$XDG_DATA_HOME/rustup"
 			;;
 
+		'.wgetrc')
+			echo '.wgetrc: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			mkdir -p "$XDG_CONFIG_HOME/wget"
+			mv "$HOME/.wgetrc" "$XDG_CONFIG_HOME/wget/wgetrc"
+			echo 'export WGETRC="$XDG_CONFIG_HOME"/wget/wgetrc' >> "$HOME/tidytilde_commands"
+			;;
+
+		'.wget-hsts')
+			if [[ -f "$XDG_CONFIG_HOME/wget/wgetrc" ]]; then
+				echo '.wget-hsts: clean process started. Appending to wgetrc.'
+				mv "$HOME/.wget-hsts" "$XDG_CONFIG_HOME/wget/wget-hsts"
+				echo 'hsts-file=~/.config/wget/wget-hsts' >> "$XDG_CONFIG_HOME/wget/wgetrc"
+			else
+				echo '.wget-hsts: clean process started. Appending to wgetrc. env variable needs to be set. Check tidytilde_commands in your $HOME'
+				mkdir -p "$XDG_CONFIG_HOME/wget"
+				mv "$HOME/.wget-hsts" "$XDG_CONFIG_HOME/wget/wget-hsts"
+				echo 'hsts-file=~/.config/wget/wget-hsts' >> "$XDG_CONFIG_HOME/wget/wgetrc"
+				echo 'export WGETRC="$XDG_CONFIG_HOME"/wget/wgetrc' >> "$HOME/tidytilde_commands"
+			fi
+			;;
+
 		'.wine')
 			echo '.wine: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
 			mkdir -p "$XDG_DATA_HOME"/wineprefixes
 			echo 'export WINEPREFIX="$XDG_DATA_HOME"/wineprefixes/default' >> "$HOME/tidytilde_commands"
+			;;
+
+		'.zshrc')
+			echo '.zshrc: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			mkdir -p "$XDG_CONFIG_HOME/zsh"
+			mv "$HOME/.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
+			echo 'export ZDOTDIR="$XDG_CONFIG_HOME"/zsh' >> "$HOME/tidytilde_commands"
 			;;
 
 		'.')

@@ -1,6 +1,5 @@
 #!/bin/bash
-## Script to clean up your "$HOME"
-
+## Script to clean up your $HOME
 # XDG directories
 : ${XDG_CONFIG_HOME=$HOME/.config}
 : ${XDG_CACHE_HOME=$HOME/.cache}
@@ -21,13 +20,76 @@ clean_dotfile() {
 	local dotfile_name=${dotfile_path##*/}
 
 	case $dotfile_name in
-		'.bashrc')
-			echo "bashrc clean process started"
-			# TODO
+		#THE XDG FOLDERS
+		'.config')
+			echo ".config is not applicable"
 			;;
+
+		'.cache')
+			echo ".cache is not applicable"
+			;;
+		
+		'.local')
+			echo ".local is not applicable"
+			;;
+		# THE REST OF THE DOTFILES
+
+		'.asoundrc')
+			echo ".asoundrc: clean process started."
+			mkdir -p "$XDG_CONFIG_HOME/alsa"
+			mv "$HOME/.asoundrc" "$XDG_CONFIG_HOME/alsa/asoundrc"
+			;;
+
+		'.cargo')
+			echo '.cargo: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			echo 'export CARGO_HOME="$XDG_DATA_HOME"/cargo' >> "$HOME/tidytilde_commands"
+			mv "$HOME/.cargo" "$XDG_DATA_HOME/cargo"
+			;;
+
+		'.fehbg')
+			echo '.fehbg: clean process started. Alias needs to be set. Check tidytilde_commands in your $HOME'
+			echo 'alias feh="feh --no-fehbg"' >> "$HOME/tidytilde_commands"
+			;;
+
+		'.fltk')
+			echo '.fltk: No way to clean. Check https://www.fltk.org/str.php?L3370+P0+S0+C0+I0+E0+V%25+Qxdg'
+			;;
+
+		'.fonts')
+			echo '.fonts: clean process started. From now on, use $XDG_DATA_HOME/fonts to store fonts'
+			mv "$HOME/.fonts/*" "$XDG_DATA_HOME/fonts/"
+			rmdir "$HOME/.fonts"
+			;;
+
+		'.gitconfig')
+			echo '.gitconfig: clean process started.'
+			mv "$HOME/.gitconfig" "$XDG_CONFIG_HOME/git/config"
+			;;
+
+		'.git-credentials')
+			echo '.git-credentials: No way to clean.'
+			;;
+			
+		'.gnome')
+			echo '.git-credentials: No way to clean. Check https://gitlab.freedesktop.org/xdg/xdg-utils/-/issues/81'
+			;;
+
+		'.gnupg')
+			#TODO
+			;;
+
+		'.gtkrc-2.0')
+			echo '.gtkrc-2.0: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			echo 'export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc' >> "$HOME/tidytilde_commands"
+			mv "$HOME/.gtkrc-2.0" "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+			;;
+		'.icons')
+			echo '.icons: No way to clean.'
+			;;
+
 		'.irssi')
 			echo "irssi clean process started"
-			# TODO
+			#TODO
 			;;
 		*)
 			echo "clean up process for $dotfile_name isn't added yet"

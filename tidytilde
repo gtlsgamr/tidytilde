@@ -87,7 +87,7 @@ clean_dotfile() {
 		'.rustup')
 			echo '.rustup: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
 			echo 'export RUSTUP_HOME="$XDG_DATA_HOME"/rustup' >> "$HOME/tidytilde_commands"
-			mv "$HOME/rustup" "$XDG_DATA_HOME/rustup"
+			mv "$HOME/.rustup" "$XDG_DATA_HOME/rustup"
 			;;
 
 		'.wine')

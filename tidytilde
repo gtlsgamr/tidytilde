@@ -97,12 +97,12 @@ clean_dotfile() {
 		'.vim')
 			echo '.vim: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
 			echo "export VIMINIT='let $MYVIMRC=$XDG_CONFIG_HOME/vim/vimrc | source $MYVIMRC'" >> "${HOME}/tidytilde_commands"
-			mv "~/.vim" "${XDG_CONFIG_HOME}/vim"
+			mv "$HOME/.vim" "${XDG_CONFIG_HOME}/vim"
+			;;
 		'.vimrc')
 			echo '.vimrc: clean process started.'
-			mv "~/.vimrc" "${XDG_CONFIG_HOME}/vim/vimrc"
-		'.viminfo')
-			echo '.viminfo: clean process started'
+			mv "$HOME/.vimrc" "${XDG_CONFIG_HOME}/vim/vimrc"
+			;;
 		'.')
 			echo "irssi clean process started"
 			#TODO

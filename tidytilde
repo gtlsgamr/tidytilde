@@ -59,6 +59,7 @@ clean_dotfile() {
 
 		'.gitconfig')
 			echo '.gitconfig: clean process started.'
+			mkdir -p "$XDG_CONFIG_HOME/git"
 			mv "$HOME/.gitconfig" "$XDG_CONFIG_HOME/git/config"
 			;;
 

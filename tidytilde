@@ -87,6 +87,24 @@ clean_dotfile() {
 			mv "$HOME/rustup" "$XDG_DATA_HOME/rustup"
 			;;
 
+		'.taskrc')
+			echo '.taskrc: clean process started.'
+			mkdir -p "$XDG_CONFIG_HOME/task"
+			mv "$HOME/.taskrc" "$XDG_CONFIG_HOME/task/taskrc"
+			;;
+
+		'.task')
+			echo '.task: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			mv "$HOME/.task" "$XDG_DATA_HOME/task"
+			echo 'export TASKDATA="$XDG_DATA_HOME"/task' >> "$HOME/tidytilde_commands"
+			;;
+
+		'.timewarrior')
+			echo '.timewarrior: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
+			mv "$HOME/.timewarrior" "$XDG_CONFIG_HOME/timewarrior"
+			echo 'export TIMEWARRIORDB="$XDG_CONFIG_HOME"/timewarrior' >> "$HOME/tidytilde_commands"
+			;;
+
 		'.wgetrc')
 			echo '.wgetrc: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
 			mkdir -p "$XDG_CONFIG_HOME/wget"

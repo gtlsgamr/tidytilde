@@ -23,14 +23,16 @@ source_command(){
 	# This function appends 'export variable' command to $TIDYTILDE_COMMANDS file.
 	# Use '-a' flag for alias.
 
+	[[ $# == [23] ]] || return
+
 	if [[ "$1" = "-a" ]]; then
 		shift
 		printf '\tAlias needs to be set. '
-		echo "alias $1='$2'" >> "$TIDYTILDE_COMMANDS"
+		printf '%s\n' "alias $1='$2'" >> "$TIDYTILDE_COMMANDS"
 
-	elif [[ -n "$1" && -n "$2" ]]; then
+	else
 		printf '\tEnv variable needs to be set. '
-		echo "export $1='$2'" >> "$TIDYTILDE_COMMANDS"
+		printf '%s\n' "export $1='$2'" >> "$TIDYTILDE_COMMANDS"
 
 	fi
 	printf 'Check tidytilde_commands in your $HOME\n'
@@ -41,35 +43,44 @@ move_files(){
 	# It creates subdirectories wherever needed. If the destination file already
 	# exists, 'mv -i' will prompt the user for overwriting. If "$1" is a directory
 	# and the destination is an already existing dirctory, it will move the
-	# contents of the dotdir into the existing destination directory. If only "$1"
-	# is passed, it will remove it from $HOME.
+	# contents of the dotdir into the existing destination directory.
 
+	(( $# == 2 )) || return
 	local dotfile="$1"
 	local destination="$2"
 
 	printf "%b%s%b: clean process started.\n" "$c_green" "${dotfile##*/}" "$c_reset"
 
 	if
-		[[ -z "$destination" ]]
-	then
-		rm -r "$dotfile"
-	elif
 		[[ -f "$dotfile" ]]
 	then
 		mkdir -p "${destination%/*}"
 		mv -i "$dotfile" "$destination"
 	elif
-		[[ -d "$1" ]];
+		[[ -d "$dotfile" ]];
 	then
 		if
 			[[ -d "$destination" ]]
 		then
-			[[ -n "$(ls -A "$dotfile")" ]] && mv -i "$dotfile"/* "$destination" || printf '\tRemoving empty directory\n'
-			[[ -n "$(ls -A "$dotfile")" ]] || rm -r "$dotfile"
+			files=("$dotfile"/*)
+			(( ${#files[@]} != 0 )) && mv -i "$dotfile"/* "$destination"
+
+			files=("$dotfile"/*)
+			(( ${#files[@]} == 0 )) && rm -r "$dotfile"
 		else
 			mv -i "$dotfile" "$destination"
 		fi
 	fi
+}
+
+remove_files(){
+	(( $# == 1 )) || return
+	local dotfile="$1"
+
+	printf "%b%s%b: clean process started.\n" "$c_green" "${dotfile##*/}" "$c_reset"
+	printf "\tRemoving file\n"
+
+	rm -r "$dotfile"
 }
 
 if
@@ -97,7 +108,6 @@ clean_dotfile() {
 		# THE REST OF THE DOTFILES
 
 		'.asoundrc')
-			echo ".asoundrc: clean process started."
 			move_files "$HOME/.asoundrc" "$XDG_CONFIG_HOME/alsa/asoundrc"
 			;;
 
@@ -107,7 +117,7 @@ clean_dotfile() {
 			;;
 
 		'.fehbg')
-			move_files "$HOME/.fehbg"
+			remove_files "$HOME/.fehbg"
 			source_command -a 'feh' 'feh --no-fehbg'
 			;;
 

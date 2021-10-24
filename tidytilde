@@ -1,17 +1,99 @@
 #!/bin/bash
 ## Script to clean up your $HOME
 # XDG directories
-: "${XDG_CONFIG_HOME=$HOME/.config}"
-: "${XDG_CACHE_HOME=$HOME/.cache}"
-: "${XDG_DATA_HOME=$HOME/.local/share}"
+: "${XDG_CONFIG_HOME:=$HOME/.config}"
+: "${XDG_CACHE_HOME:=$HOME/.cache}"
+: "${XDG_DATA_HOME:=$HOME/.local/share}"
+: "${TIDYTILDE_COMMANDS:=$HOME/tidytilde_commands}"
+
+# colour text
+c_green="\e[1;32m"
+c_cyan="\e[1;36m"
+c_reset="\e[0m"
 
 # stop when something unexpected happends
 set -eo pipefail
 
 # Get a list of dotfiles in home directory
 shopt -s nullglob
+shopt -s dotglob
 home_dotfiles=("$HOME"/.*)
 
+source_command(){
+	# This function appends 'export variable' command to $TIDYTILDE_COMMANDS file.
+	# Use '-a' flag for alias.
+
+	[[ $# == [23] ]] || return
+
+	if [[ "$1" = "-a" ]]; then
+		shift
+		printf '\tAlias needs to be set. '
+		printf '%s\n' "alias $1='$2'" >> "$TIDYTILDE_COMMANDS"
+
+	else
+		printf '\tEnv variable needs to be set. '
+		printf '%s\n' "export $1='$2'" >> "$TIDYTILDE_COMMANDS"
+
+	fi
+	printf 'Check tidytilde_commands in your $HOME\n'
+}
+
+move_files(){
+	# This function moves the dotfile/dotdir "$1" to the destionation "$2".
+	# It creates subdirectories wherever needed. If the destination file already
+	# exists, 'mv -i' will prompt the user for overwriting. If "$1" is a directory
+	# and the destination is an already existing dirctory, it will move the
+	# contents of the dotdir into the existing destination directory.
+
+	(( $# == 2 )) || return
+	local dotfile="$1"
+	local destination="$2"
+
+	printf "%b%s%b: clean process started.\n" "$c_green" "${dotfile##*/}" "$c_reset"
+
+	if
+		[[ -f "$dotfile" ]]
+	then
+		mkdir -p "${destination%/*}"
+		mv -i "$dotfile" "$destination"
+	elif
+		[[ -d "$dotfile" ]];
+	then
+		if
+			[[ -d "$destination" ]]
+		then
+			files=("$dotfile"/*)
+			(( ${#files[@]} != 0 )) && mv -i "$dotfile"/* "$destination"
+
+			files=("$dotfile"/*)
+			(( ${#files[@]} == 0 )) && rm -r "$dotfile"
+		else
+			mv -i "$dotfile" "$destination"
+		fi
+	fi
+}
+
+remove_files(){
+	(( $# == 1 )) || return
+	local dotfile="$1"
+
+	printf "%b%s%b: clean process started.\n" "$c_green" "${dotfile##*/}" "$c_reset"
+	printf "\tRemoving file\n"
+
+	rm -r "$dotfile"
+}
+
+if
+	[[ ! -f "$TIDYTILDE_COMMANDS" ]]
+then
+	: > "$TIDYTILDE_COMMANDS"
+	source_command 'XDG_CONFIG_HOME' "$XDG_CONFIG_HOME"
+	source_command 'XDG_CACHE_HOME' "$XDG_CACHE_HOME"
+	source_command 'XDG_DATA_HOME' "$XDG_DATA_HOME"
+fi
+
+# Array containing the dotfiles which haven't been cleaned
+todo_dotfiles=()
 
 # Perform cleaning to dotfile
 clean_dotfile() {
@@ -20,138 +102,127 @@ clean_dotfile() {
 	case "$dotfile_name" in
 		#THE XDG FOLDERS
 		'.config'|'.cache'|'.local')
-			echo "$dotfile_name is not applicable"
+			printf '%b%s%b is not applicable\n' "$c_green" "$dotfile_name" "$c_reset"
 			;;
 
 		# THE REST OF THE DOTFILES
 
 		'.asoundrc')
-			echo ".asoundrc: clean process started."
-			mkdir -p "$XDG_CONFIG_HOME/alsa"
-			mv "$HOME/.asoundrc" "$XDG_CONFIG_HOME/alsa/asoundrc"
+			move_files "$HOME/.asoundrc" "$XDG_CONFIG_HOME/alsa/asoundrc"
 			;;
 
 		'.cargo')
-			echo '.cargo: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			echo 'export CARGO_HOME="$XDG_DATA_HOME"/cargo' >> "$HOME/tidytilde_commands"
-			mv "$HOME/.cargo" "$XDG_DATA_HOME/cargo"
+			move_files "$HOME/.cargo" "$XDG_DATA_HOME/cargo"
+			source_command "CARGO_HOME" "$XDG_DATA_HOME/cargo"
 			;;
 
 		'.fehbg')
-			echo '.fehbg: clean process started. Alias needs to be set. Check tidytilde_commands in your $HOME'
-			echo 'alias feh="feh --no-fehbg"' >> "$HOME/tidytilde_commands"
+			remove_files "$HOME/.fehbg"
+			source_command -a 'feh' 'feh --no-fehbg'
 			;;
 
 		'.fonts')
-			echo '.fonts: clean process started. From now on, use $XDG_DATA_HOME/fonts to store fonts'
-			mv "$HOME/.fonts" "$XDG_DATA_HOME/fonts"
+			move_files "$HOME/.fonts" "$XDG_DATA_HOME/fonts"
 			;;
 
 		'.gitconfig')
-			echo '.gitconfig: clean process started.'
-			mkdir -p "$XDG_CONFIG_HOME/git"
-			mv "$HOME/.gitconfig" "$XDG_CONFIG_HOME/git/config"
+			move_files "$HOME/.gitconfig" "$XDG_CONFIG_HOME/git/config"
 			;;
+
 
 		'.gnupg')
 			#TODO
 			;;
 
 		'.gtkrc-2.0')
-			echo '.gtkrc-2.0: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			echo 'export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc' >> "$HOME/tidytilde_commands"
-			mkdir -p "$XDG_CONFIG_HOME/gtk-2.0"
-			mv "$HOME/.gtkrc-2.0" "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+			move_files "$HOME/.gtkrc-2.0" "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
+			source_command 'GTK2_RC_FILES' "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 			;;
 
 		'.irssi')
-			echo "irssi clean process started"
 			#TODO
 			;;
 		'.newsboat')
-			echo '.newsboat: clean process started.'
+			move_files "$HOME/.newsboat" "$XDG_DATA_HOME/newsboat"
 			mkdir -p "$XDG_CONFIG_HOME/newsboat"
-			mv "$HOME/.newsboat/config" "$HOME/.newsboat/urls" "$XDG_CONFIG_HOME/newsboat"
-			mv "$HOME/.newsboat" "$XDG_DATA_HOME/newsboat"
+			mv "$XDG_DATA_HOME/newsboat/config" "$XDG_DATA_HOME/newsboat/urls" "$XDG_CONFIG_HOME/newsboat"
 			;;
 
 		'.password-store')
-			echo '.password-store: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			echo 'export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass' >> "$HOME/tidytilde_commands"
-			mv "$HOME/.password-store" "$XDG_DATA_HOME/pass"
+			move_files "$HOME/.password-store" "$XDG_DATA_HOME/pass"
+			source_command 'PASSWORD_STORE_DIR' "$XDG_DATA_HOME/pass"
 			;;
 
 		'.rustup')
-			echo '.rustup: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			echo 'export RUSTUP_HOME="$XDG_DATA_HOME"/rustup' >> "$HOME/tidytilde_commands"
-			mv "$HOME/rustup" "$XDG_DATA_HOME/rustup"
+			move_files "$HOME/.rustup" "$XDG_DATA_HOME/rustup"
+			source_command 'RUSTUP_HOME' "$XDG_DATA_HOME/rustup"
 			;;
 
 		'.taskrc')
-			echo '.taskrc: clean process started.'
-			mkdir -p "$XDG_CONFIG_HOME/task"
-			mv "$HOME/.taskrc" "$XDG_CONFIG_HOME/task/taskrc"
+			move_files "$HOME/.taskrc" "$XDG_CONFIG_HOME/task/taskrc"
 			;;
 
 		'.task')
-			echo '.task: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			mv "$HOME/.task" "$XDG_DATA_HOME/task"
-			echo 'export TASKDATA="$XDG_DATA_HOME"/task' >> "$HOME/tidytilde_commands"
+			move_files "$HOME/.task" "$XDG_DATA_HOME/task"
+			source_command 'TASKDATA' "$XDG_DATA_HOME/task"
 			;;
 
 		'.timewarrior')
-			echo '.timewarrior: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			mv "$HOME/.timewarrior" "$XDG_CONFIG_HOME/timewarrior"
-			echo 'export TIMEWARRIORDB="$XDG_CONFIG_HOME"/timewarrior' >> "$HOME/tidytilde_commands"
+			move_files "$HOME/.timewarrior" "$XDG_CONFIG_HOME/timewarrior"
+			source_command 'TIMEWARRIORDB' "$XDG_CONFIG_HOME/timewarrior"
 			;;
 
 		'.wgetrc')
-			echo '.wgetrc: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			mkdir -p "$XDG_CONFIG_HOME/wget"
-			mv "$HOME/.wgetrc" "$XDG_CONFIG_HOME/wget/wgetrc"
-			echo 'export WGETRC="$XDG_CONFIG_HOME"/wget/wgetrc' >> "$HOME/tidytilde_commands"
+			move_files "$HOME/.wgetrc" "$XDG_CONFIG_HOME/wget/wgetrc"
+			source_command 'WGETRC' "$XDG_CONFIG_HOME/wget/wgetrc"
 			;;
 
 		'.wget-hsts')
-			if [[ -f "$XDG_CONFIG_HOME/wget/wgetrc" ]]; then
-				echo '.wget-hsts: clean process started. Appending to wgetrc.'
-				mv "$HOME/.wget-hsts" "$XDG_CONFIG_HOME/wget/wget-hsts"
+			move_files "$HOME/.wget-hsts" "$XDG_CONFIG_HOME/wget/wget-hsts"
+			printf '\tAppending to wgetrc.\n'
+
+			if
+				[[ -f "$XDG_CONFIG_HOME/wget/wgetrc" ]]
+			then
 				echo 'hsts-file=~/.config/wget/wget-hsts' >> "$XDG_CONFIG_HOME/wget/wgetrc"
+			elif
+				[[ -f "$XDG_CONFIG_HOME/.wgetrc" ]]
+			then
+				echo 'hsts-file=~/.config/wget/wget-hsts' >> "$XDG_CONFIG_HOME/.wgetrc"
 			else
-				echo '.wget-hsts: clean process started. Appending to wgetrc. env variable needs to be set. Check tidytilde_commands in your $HOME'
-				mkdir -p "$XDG_CONFIG_HOME/wget"
-				mv "$HOME/.wget-hsts" "$XDG_CONFIG_HOME/wget/wget-hsts"
 				echo 'hsts-file=~/.config/wget/wget-hsts' >> "$XDG_CONFIG_HOME/wget/wgetrc"
-				echo 'export WGETRC="$XDG_CONFIG_HOME"/wget/wgetrc' >> "$HOME/tidytilde_commands"
+				source_command 'WGETRC' "$XDG_CONFIG_HOME/wget/wgetrc"
 			fi
 			;;
 
 		'.wine')
-			echo '.wine: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			mkdir -p "$XDG_DATA_HOME"/wineprefixes
-			echo 'export WINEPREFIX="$XDG_DATA_HOME"/wineprefixes/default' >> "$HOME/tidytilde_commands"
+			move_files "$HOME/.wine" "$XDG_DATA_HOME/wineprefixes/default"
+			source_command 'WINEPREFIX' "$XDG_DATA_HOME/wineprefixes/default"
 			;;
 
 		'.zshrc')
-			echo '.zshrc: clean process started. env variable needs to be set. Check tidytilde_commands in your $HOME'
-			mkdir -p "$XDG_CONFIG_HOME/zsh"
-			mv "$HOME/.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
-			echo 'export ZDOTDIR="$XDG_CONFIG_HOME"/zsh' >> "$HOME/tidytilde_commands"
+			move_files "$HOME/.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
+			source_command 'ZDOTDIR' "$XDG_CONFIG_HOME/zsh"
 			;;
 
-		'.')
-			echo "irssi clean process started"
-			#TODO
+		'.'|'..')
+			:
 			;;
+
 		*)
-			echo "clean up process for $dotfile_name isn't added yet"
+			todo_dotfiles+=("$dotfile_name")
 			;;
+
 	esac
 }
-
 
 
 
 for file_path in "${home_dotfiles[@]}"; do
 	clean_dotfile "$file_path"
 done
+
+# Prints a list of dotfiles still in $HOME
+printf '\n%bClean up process not added yet for these dotfiles:%b\n' "$c_cyan" "$c_reset"
+printf '%s, ' "${todo_dotfiles[@]}"
+printf '\n'

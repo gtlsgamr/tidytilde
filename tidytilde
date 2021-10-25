@@ -204,14 +204,39 @@ clean_dotfile() {
 			move_files "$HOME/.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
 			source_command 'ZDOTDIR' "$XDG_CONFIG_HOME/zsh"
 			;;
-
+        '.xinitrc')
+            mkdir -p "$XDG_CONFIG_HOME/X11"
+            move_files "$HOME/.xinitrc" "$XDG_CONFIG_HOME/X11/xinitrc"
+            source_command -a "startx" "startx '$XDG_CONFIG_HOME/X11/xinitrc'"
+            ;;
+        '.xsession')
+            mkdir -p "$XDG_CONFIG_HOME/X11"
+            move_files "$HOME/.xsession" "$XDG_CONFIG_HOME/X11/xsession"
+            source_command "USERXSESSION" "$XDG_CACHE_HOME/X11/xsession"
+            ;;
+        '.Xauthority')
+            if command -v lightdm; then
+                if cat /etc/lightdm/lightdm.conf  | grep user-authority-in-system-dir=true; then
+                    echo You have lightdm but because your lightdm config has the option to respect Xauthority directory variable turned on, the script is moving your .Xauthority to XDG_RUNTIME_DIR.
+                    move_files "$HOME/.Xauthority" "$XDG_RUNTIME_DIR/Xauthority"
+                    source_command "XAUTHORITY" "$XDG_RUNTIME_DIR/Xauthority"
+                else
+                    echo Your lightdm install doesnt respect Xauthority directory variable which means Xauthority file has to be in its default location
+                    echo But you can make it respect the variable by adding an option to your lightdm.conf
+                    echo https://askubuntu.com/questions/960793/whats-the-right-place-to-set-the-xauthority-environment-variable/961459#961459
+                fi
+            else
+                move_files "$HOME/.Xauthority" "$XDG_RUNTIME_DIR/Xauthority"
+                source_command "XAUTHORITY" "$XDG_RUNTIME_DIR/Xauthority"
+            fi
+            ;;
 		'.'|'..')
 			:
 			;;
 
 		*)
 			todo_dotfiles+=("$dotfile_name")
-			;;
+			            ;;
 
 	esac
 }

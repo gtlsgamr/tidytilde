@@ -108,6 +108,7 @@ clean_dotfile() {
 		# THE REST OF THE DOTFILES
 
 		'.asoundrc')
+            mkdir -p "$XDG_CONFIG_HOME/alsa"
 			move_files "$HOME/.asoundrc" "$XDG_CONFIG_HOME/alsa/asoundrc"
 			;;
 
@@ -126,6 +127,7 @@ clean_dotfile() {
 			;;
 
 		'.gitconfig')
+            mkdir -p "$XDG_CONFIG_HOME/git"
 			move_files "$HOME/.gitconfig" "$XDG_CONFIG_HOME/git/config"
 			;;
 
@@ -135,6 +137,7 @@ clean_dotfile() {
 			;;
 
 		'.gtkrc-2.0')
+            mkdir -p "$XDG_CONFIG_HOME/gtk-2.0"
 			move_files "$HOME/.gtkrc-2.0" "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 			source_command 'GTK2_RC_FILES' "$XDG_CONFIG_HOME/gtk-2.0/gtkrc"
 			;;
@@ -159,10 +162,12 @@ clean_dotfile() {
 			;;
 
 		'.taskrc')
+            mkdir -p "$XDG_CONFIG_HOME/task"
 			move_files "$HOME/.taskrc" "$XDG_CONFIG_HOME/task/taskrc"
 			;;
 
 		'.task')
+            mkdir -p "$XDG_CONFIG_HOME/task"
 			move_files "$HOME/.task" "$XDG_DATA_HOME/task"
 			source_command 'TASKDATA' "$XDG_DATA_HOME/task"
 			;;
@@ -173,11 +178,13 @@ clean_dotfile() {
 			;;
 
 		'.wgetrc')
+            mkdir -p "$XDG_CONFIG_HOME/wget"
 			move_files "$HOME/.wgetrc" "$XDG_CONFIG_HOME/wget/wgetrc"
 			source_command 'WGETRC' "$XDG_CONFIG_HOME/wget/wgetrc"
 			;;
 
 		'.wget-hsts')
+            mkdir -p "$XDG_CONFIG_HOME/wget"
 			move_files "$HOME/.wget-hsts" "$XDG_CONFIG_HOME/wget/wget-hsts"
 			printf '\tAppending to wgetrc.\n'
 
@@ -196,6 +203,7 @@ clean_dotfile() {
 			;;
 
 		'.wine')
+            mkdir -p "$XDG_DATA_HOME/wineprefixes"
 			move_files "$HOME/.wine" "$XDG_DATA_HOME/wineprefixes/default"
 			source_command 'WINEPREFIX' "$XDG_DATA_HOME/wineprefixes/default"
 			;;
